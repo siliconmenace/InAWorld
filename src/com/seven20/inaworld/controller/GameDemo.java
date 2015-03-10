@@ -35,148 +35,138 @@ import com.seven20.inaworld.models.LocationObject;
 //
 // Last modification date : December 20, 1997
 //
-class GameDemo
-{
-	private static final String	filename		= "InAWorld.dat";
+class GameDemo {
+    private static final String filename = "InAWorld.dat";
 
-	// InAWorld
-	private InAWorld			game;
-	private Inventory			playerInventory	= new Inventory();
+    // InAWorld
+    private InAWorld game;
+    private Inventory playerInventory = new Inventory();
 
-	// Game demo constructor
-	public GameDemo() throws Exception
-	{
+    // Game demo constructor
+    public GameDemo() throws Exception {
 
-		// Create a file input stream
-		FileInputStream fin = new FileInputStream( filename );
+	// Create a file input stream
+	FileInputStream fin = new FileInputStream(filename);
 
-		// Create an object input stream
-		ObjectInputStream objectIn = new ObjectInputStream( fin );
+	// Create an object input stream
+	ObjectInputStream objectIn = new ObjectInputStream(fin);
 
-		// Read an object in from object store, and cast it to a InAWorld
-		game = ( InAWorld ) objectIn.readObject();
+	// Read an object in from object store, and cast it to a InAWorld
+	game = (InAWorld) objectIn.readObject();
 
-		// Set the object stream to standard output
-		game.setOutputStream( System.out, 40 );
+	// Set the object stream to standard output
+	game.setOutputStream(System.out, 40);
+    }
+
+    public static void main(String args[]) throws Exception {
+	new GameDemo().play();
+    }
+
+    public void play() {
+	String command = null;
+	boolean validCommand = false;
+
+	BufferedReader din = new BufferedReader(
+		new InputStreamReader(System.in));
+
+	for (;;) {
+	    // Show location
+	    game.showLocation();
+
+	    // Get user input
+	    try {
+		command = din.readLine();
+
+		// Print a new line
+		System.out.println();
+	    } catch (IOException e) {
+		e.printStackTrace();
+	    }
+
+	    // By default, we haven't found a valid command
+
+	    // Convert to uppercase for comparison
+	    parseCommand(command.toUpperCase());
+
+	    if (commandStack.size() > 1) {
+		validCommand = executeCommand();
+
+	    } else if (commandStack.size() == 1) {
+		validCommand = executeExit(commandStack.pop(), validCommand);
+	    } else {
+		System.out.println("Huh? Invalid command!");
+	    }
+
+	    // TODO // Check to see if user wants to quit
+	    // if ( command.compareTo( "QUIT" ) == 0 )
+	    // {
+	    // System.out.println( "Okay. Bye!" );
+	    // System.exit( 0 );
+	    // }
+
+	    // If no valid commands, warn the user is invalid
+	    if (!validCommand) {
+		System.out.println("Huh? Invalid direction!");
+		System.out.println();
+	    }
+	}
+    }
+
+    Deque<String> commandStack = new ArrayDeque<String>();
+
+    private void parseCommand(String _command) {
+	// _command.concat( " " );
+	commandStack.clear();
+
+	while (_command.contains(" ")) {
+	    commandStack.addLast(_command.substring(0, _command.indexOf(" ")));
+	    _command = _command.replace(commandStack.peek(), "").trim();
+	}
+	commandStack.addLast(_command);
+    }
+
+    private boolean executeCommand() {
+	LocationObject lo;
+	CommandEnum cmd = CommandEnum.lookup(commandStack.peek());
+	switch (cmd.getDirNumber()) {
+	case 9002:
+	    lo = game.getCurrentLocation().performAction(commandStack);
+	    playerInventory.add(lo);
+	    System.out.println("The " + lo.getTitle()
+		    + ", is now in your inventory.");
+	    break;
+	case 9003:
+	    String object = commandStack.pollLast();
+	    lo = playerInventory.remove(object);
+	    if (lo == null) {
+		System.out.println("You don't have the " + object);
+	    } else {
+		game.getCurrentLocation().addObject(lo);
+		System.out.println("You dropped the " + lo.getTitle());
+	    }
+	    break;
+	case 9005:
+	    playerInventory.examine(commandStack.pollLast());
 	}
 
-	public static void main( String args[] ) throws Exception
-	{
-		new GameDemo().play();
+	return Boolean.TRUE;
+    }
+
+    Exit currentExit;
+    CommandEnum currentCmd;
+
+    private boolean executeExit(String _command, boolean validCommand) {
+	currentCmd = CommandEnum.lookup(_command);
+	try {
+	    currentExit = game.getCurrentLocation().getExit(currentCmd);
+
+	    // Set location to the location pointed to by exit
+	    game.setCurrentLocation(currentExit.getLeadsTo());
+	    validCommand = true;
+	} catch (ExitNotFoundException e) {
+	    e.printStackTrace();
 	}
 
-	public void play()
-	{
-		String command = null;
-		boolean validCommand = false;
-
-		BufferedReader din = new BufferedReader( new InputStreamReader( System.in ) );
-
-		for ( ;; )
-		{
-			// Show location
-			game.showLocation();
-
-			// Get user input
-			try
-			{
-				command = din.readLine();
-
-				// Print a new line
-				System.out.println();
-			} catch( IOException e )
-			{
-				e.printStackTrace();
-			}
-
-			// By default, we haven't found a valid command
-
-			// Convert to uppercase for comparison
-			parseCommand( command.toUpperCase() );
-
-			if ( commandStack.size() > 1 )
-			{
-				validCommand = executeCommand(  );
-
-			} else if ( commandStack.size() == 1 )
-			{
-				validCommand = executeExit( commandStack.pop(), validCommand );
-			} else
-			{
-				System.out.println( "Huh? Invalid command!" );
-			}
-
-			// TODO // Check to see if user wants to quit
-			// if ( command.compareTo( "QUIT" ) == 0 )
-			// {
-			// System.out.println( "Okay. Bye!" );
-			// System.exit( 0 );
-			// }
-
-			// If no valid commands, warn the user is invalid
-			if ( !validCommand )
-			{
-				System.out.println( "Huh? Invalid direction!" );
-				System.out.println();
-			}
-		}
-	}
-
-	Deque<String>	commandStack	= new ArrayDeque<String>();
-
-	private void parseCommand( String _command )
-	{
-		// _command.concat( " " );
-		commandStack.clear();
-
-		while ( _command.contains( " " ) )
-		{
-			commandStack.addLast( _command.substring( 0, _command.indexOf( " " ) ) );
-			_command = _command.replace( commandStack.peek(), "" ).trim();
-		}
-		commandStack.addLast( _command );
-	}
-
-	private boolean executeCommand( )
-	{
-		LocationObject lo;
-		CommandEnum cmd = CommandEnum.lookup( commandStack.peek() );
-		switch(cmd.getDirNumber()){
-		case 9002:
-			lo = game.getCurrentLocation().performAction( commandStack );
-			playerInventory.add(lo);
-			System.out.println("The " + lo.getTitle() + ", is now in your inventory.");
-			break;
-		case 9003:
-			lo = playerInventory.remove( commandStack.pollLast());
-			game.getCurrentLocation().addObject( lo );
-			System.out.println("You dropped the " + lo.getTitle() );
-			break;
-		case 9005:
-			playerInventory.examine(commandStack.pollLast());
-		}
-		
-		return Boolean.TRUE;
-	}
-
-	Exit		currentExit;
-	CommandEnum	currentCmd;
-
-	private boolean executeExit( String _command, boolean validCommand )
-	{
-		currentCmd = CommandEnum.lookup( _command );
-		try
-		{
-			currentExit = game.getCurrentLocation().getExit( currentCmd );
-
-			// Set location to the location pointed to by exit
-			game.setCurrentLocation( currentExit.getLeadsTo() );
-			validCommand = true;
-		} catch( ExitNotFoundException e )
-		{
-			e.printStackTrace();
-		}
-
-		return validCommand;
-	}
+	return validCommand;
+    }
 }
