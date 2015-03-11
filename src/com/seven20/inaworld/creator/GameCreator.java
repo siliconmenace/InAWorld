@@ -38,6 +38,11 @@ public final class GameCreator
 		
 		//Create LocationObjects
 		l2.addObject( new LocationObject( "Stick", "Nothing more than a twig", 0));
+		LocationObject c1 = new LocationObject( "Box", "A small box", 1);
+		c1.getContents().add(new LocationObject("Ring", "A small gold ring. It looks rather old", 0));
+		l2.addObject(c1 );
+	
+		
 		
 		// Create exit objects
 		Exit e1 = new Exit ( CommandEnum.UP, l2 );

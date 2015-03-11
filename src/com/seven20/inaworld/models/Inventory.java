@@ -64,7 +64,7 @@ public class Inventory implements Serializable
 		{
 			if ( lo.getTitle().getText().equalsIgnoreCase( obj ) )
 			{
-				objects.remove( lo );
+				//objects.remove( lo );
 				return lo.getInteractiveObject();
 			}
 		}
@@ -80,6 +80,19 @@ public class Inventory implements Serializable
 		{
 			System.out.println( "You don't have the " + obj );
 		}
+	}
+
+	public LocationObject drop(String _object) {
+	   
+	    LocationObject lo = get(_object); 
+	    if ( lo == null) {
+		System.out.println("You don't have the " + _object);
+		return null;
+	    } else {
+		System.out.println("You dropped the " + lo.getTitle());
+		return remove(lo);
+		
+	    }
 	}
 
 	

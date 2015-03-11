@@ -25,6 +25,7 @@ public class LocationObject implements Interactive, Serializable
 	private Description description;
 	private Weight weight;
 	private ObjectId objectId;
+	private LocationObjects contents = new LocationObjects();
 
 	
 	public LocationObject(String _title, String _desc, int _weight){
@@ -62,5 +63,15 @@ public class LocationObject implements Interactive, Serializable
 	{
 		return this;
 	}
+	
+	public LocationObjects getContents(){
+	    return contents;
+	}
+	
+	public void open(){
+	    //TODO The object abstraction is breaking down, need to create better model for interactive objects and provide further encapsulation.
+	}
+	
+	
 }
 

@@ -135,15 +135,9 @@ class GameDemo {
 	    System.out.println("The " + lo.getTitle()
 		    + ", is now in your inventory.");
 	    break;
-	case 9003:
-	    String object = commandStack.pollLast();
-	    lo = playerInventory.remove(object);
-	    if (lo == null) {
-		System.out.println("You don't have the " + object);
-	    } else {
-		game.getCurrentLocation().addObject(lo);
-		System.out.println("You dropped the " + lo.getTitle());
-	    }
+	case 9003://Drop
+	    System.out.println(commandStack.pop());
+	    game.getCurrentLocation().addObject(playerInventory.drop(commandStack.pop()));
 	    break;
 	case 9005:
 	    playerInventory.examine(commandStack.pollLast());
